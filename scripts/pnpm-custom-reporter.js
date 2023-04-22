@@ -23,21 +23,21 @@ function process_line(line) {
 		return;
 	}
 
-	if (!parsed.depPath || parsed.depPath.endsWith('packages/kit')) {
-		if (parsed.line.startsWith('{')) {
-			try {
-				parsed = JSON.parse(parsed.line);
-			} catch {
-				return;
-			}
-			if (parsed.name === 'pnpm:scope') {
-				stdout.write(`\n::group::nested-${++count}\n`);
-			} else if (parsed.name === 'pnpm:execution-time') {
-				stdout.write(`::endgroup::\n`);
-			}
+	if (!parsed.depPath) {
+		return;
+	} else if (parsed.line.startsWith('{')) {
+		try {
+			parsed = JSON.parse(parsed.line);
+		} catch {
 			return;
 		}
-
+		if (parsed.name === 'pnpm:scope') {
+			stdout.write(`\n::group::`);
+		} else if (parsed.name === 'pnpm:execution-time') {
+			const time = ((parsed.endedAt - parsed.startedAt) / 1000).toFixed(2);
+			stdout.write(`::endgroup::nested-${count--} took ${time}s\n\n`);
+		}
+	} else if (parsed.depPath.endsWith('/packages/kit')) {
 		stdout.write(parsed.line);
 		stdout.write('\n');
 	} else {
