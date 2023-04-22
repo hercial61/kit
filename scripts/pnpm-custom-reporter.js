@@ -32,10 +32,18 @@ function process_line(line) {
 			return;
 		}
 		if (parsed.name === 'pnpm:scope') {
-			stdout.write(`\n::group::`);
+			count++;
+			// nested groups don't work yet so we only use groups for nested scripts inside packages/kit/test/*
+			// where we have a lot of output
+			if (count === 3) {
+				stdout.write(`\n::group::`);
+			}
 		} else if (parsed.name === 'pnpm:execution-time') {
-			const time = ((parsed.endedAt - parsed.startedAt) / 1000).toFixed(2);
-			stdout.write(`::endgroup::nested-${count--} took ${time}s\n\n`);
+			if (count === 3) {
+				const time = ((parsed.endedAt - parsed.startedAt) / 1000).toFixed(2);
+				stdout.write(`::endgroup:: took ${time}s\n\n`);
+			}
+			count--;
 		}
 	} else if (parsed.depPath.endsWith('/packages/kit')) {
 		stdout.write(parsed.line);
