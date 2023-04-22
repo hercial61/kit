@@ -15,10 +15,7 @@ function process_line(line) {
 	}
 
 	if (!parsed.depPath || parsed.depPath.endsWith('packages/kit')) {
-		if (parsed.line.startsWith('{"time"')) {
-			
-			return process_line(parsed.line);
-		}
+		if (parsed.line.startsWith('{"time"')) return;
 
 		stdout.write(parsed.line);
 		stdout.write('\n');
