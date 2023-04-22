@@ -98,7 +98,7 @@ test.describe('a11y', () => {
 	});
 
 	test('autofocus from previous page is ignored', async ({ page, clicknav }) => {
-		page.addInitScript(`
+		await page.addInitScript(`
 			window.active = null;
 			window.addEventListener('focusin', () => window.active = document.activeElement);
 		`);
@@ -106,8 +106,13 @@ test.describe('a11y', () => {
 		await page.goto('/accessibility/autofocus/a');
 		await clicknav('[href="/"]');
 
-		expect(await page.evaluate(() => (window.active || {}).nodeName)).toBe('BODY');
-		expect(await page.evaluate(() => (document.activeElement || {}).nodeName)).toBe('BODY');
+		expect(
+			await page.evaluate(
+				// @ts-expect-error
+				() => window.active?.nodeName
+			)
+		).toBe('BODY');
+		expect(await page.evaluate(() => document.activeElement?.nodeName)).toBe('BODY');
 	});
 });
 
