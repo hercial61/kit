@@ -3,21 +3,22 @@ import { stdin, stdout, exit } from 'node:process';
 
 const buf = new Map();
 
-const exitCode = 0;
+let exitCode = 0;
 function process_line(line) {
 	let parsed = null;
 	try {
 		parsed = JSON.parse(line);
-		if (parsed.exitCode) {
-			exitCode = parsed.exitCode;
-		}
-
-		if (!parsed.line) {
-			return;
-		}
 	} catch {
 		stdout.write(line);
 		stdout.write('\n');
+		return;
+	}
+
+	if (parsed.exitCode) {
+		process.exitCode = exitCode = parsed.exitCode;
+	}
+
+	if (!parsed.line) {
 		return;
 	}
 
@@ -47,5 +48,6 @@ createInterface({
 			stdout.write(lines.join('\n'));
 			stdout.write('\n::endgroup::\n');
 		}
+
 		exit(exitCode);
 	});
