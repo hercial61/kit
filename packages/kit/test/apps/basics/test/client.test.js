@@ -142,22 +142,34 @@ test.describe('Load', () => {
 		expect(await page.textContent('p')).toBe('This text comes from the server load function');
 	});
 
-	test('load does not call fetch if max-age allows it', async ({ page }) => {
-		page.addInitScript(`
+	test('load does not call fetch if max-age allows it', async ({ page, request }) => {
+		await page.addInitScript(`
 			window.now = 0;
 			window.performance.now = () => now;
 		`);
-
 		await page.goto('/load/cache-control/default');
-		await expect(page.getByText('Count is 0')).toBeVisible();
-		await page.locator('button').click();
-		await page.waitForLoadState('networkidle');
+
 		await expect(page.getByText('Count is 0')).toBeVisible();
 
-		await page.evaluate(() => (window.now = 2500));
+		const button = page.locator('button');
 
-		await page.locator('button').click();
-		await expect(page.getByText('Count is 2')).toBeVisible();
+		let reqs = 0;
+		page.on('request', (req) => {
+			if (req.url().endsWith('/load/cache-control/default/count')) reqs++;
+		});
+		try {
+			await button.click();
+			await expect(page.getByText('Count is 0')).toBeVisible();
+
+			await page.evaluate('window.now += 2500');
+
+			await button.click();
+			await expect(page.getByText('Count is 2')).toBeVisible();
+			expect(reqs).toBe(1);
+		} finally {
+			// Reset the server state so that retries may succeed even if this run fails
+			await request.get('/load/cache-control/default/reset').catch(() => {});
+		}
 	});
 
 	test('load does ignore ttl if fetch cache options says so', async ({ page }) => {
