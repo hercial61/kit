@@ -66,7 +66,7 @@ export const test = base.extend({
 			}
 		}
 
-		use(clicknav);
+		await use(clicknav);
 	},
 
 	in_view: async ({ page }, use) => {

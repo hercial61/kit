@@ -75,7 +75,10 @@ test.describe('a11y', () => {
 			})
 		).toBe(1);
 
-		await clicknav('[href="/selection/b"]');
+		await clicknav('[href="/selection/b"]', {
+			waitUntil: 'networkidle'
+		});
+
 		expect(
 			await page.evaluate(() => {
 				const selection = getSelection();
