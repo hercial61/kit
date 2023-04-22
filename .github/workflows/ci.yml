@@ -56,7 +56,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm playwright install ${{ matrix.e2e-browser }}
-      - run: pnpm test
+      - run: pnpm test --reporter ndjson | node scripts/pnpm-custom-reporter.js
       - name: Archive test results
         if: failure()
         shell: bash
