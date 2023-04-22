@@ -73,7 +73,7 @@ export const test = base.extend({
 		/** @param {string} selector */
 		async function in_view(selector) {
 			const box = await page.locator(selector).boundingBox();
-			const view = await page.viewportSize();
+			const view = page.viewportSize();
 			return box && view && box.y < view.height && box.y + box.height > 0;
 		}
 
@@ -107,9 +107,9 @@ export const test = base.extend({
 			}
 			// @ts-expect-error
 			page[fn] = async function (...args) {
-				const res = await page_fn.call(page, ...args);
+				const res = await page_fn.apply(page, args);
 				if (javaScriptEnabled && args[1]?.wait_for_started !== false) {
-					await page.waitForSelector('body.started', { timeout: 15000 });
+					await page.waitForSelector('body.started', { timeout: 15000, state: 'attached' });
 				}
 				return res;
 			};
